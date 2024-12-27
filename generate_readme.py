@@ -27,16 +27,11 @@ def parse_package_json():
     return project_name, description, dependencies, scripts
 
 def read_and_filter_files(file_paths):
-    filtered_files = []
-    src_folder_exists = any("src/" in path for path in file_paths)
-    
-    for file_path in file_paths:
-        if "test" not in file_path.lower() and not file_path.endswith((".css", ".json")):
-            if src_folder_exists and not file_path.startswith("src/"):
-                # Ignore files outside the src folder if it exists
-                continue
-            filtered_files.append(file_path)
-    return filtered_files
+    selected_files = [
+        file_path for file_path in file_paths
+        if not file_path.endswith((".css", ".json"))
+    ]
+    return selected_files
 
 def detect_router_type(file_paths):
     if any("/app/" in path for path in file_paths):
