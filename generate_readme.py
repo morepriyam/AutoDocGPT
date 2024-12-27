@@ -21,17 +21,17 @@ def parse_package_json():
     with open("package.json", "r") as f:
         package_data = json.load(f)
     project_name = package_data.get("name", "Unnamed Project").capitalize()
-    description = package_data.get("description", None)
+    description = package_data.get("description", "A financial management platform.")
     dependencies = package_data.get("dependencies", {})
     scripts = package_data.get("scripts", {})
     return project_name, description, dependencies, scripts
 
 def read_and_filter_files(file_paths):
-    filtered_files = [
+    selected_files = [
         file_path for file_path in file_paths
         if not file_path.endswith((".css", ".json"))
     ]
-    return filtered_files
+    return selected_files
 
 def detect_router_type(file_paths):
     if any("/app/" in path for path in file_paths):
@@ -45,7 +45,7 @@ def generate_section(prompt):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=500  # Reduced to fit concise content
+            max_tokens=700
         )
         return response
 
@@ -54,13 +54,11 @@ def generate_section(prompt):
 
 def generate_readme(project_name, description, dependencies, scripts, file_paths, router_type):
     dependencies_list = "\n".join([f"- **{lib}**: {version}" for lib, version in dependencies.items()])
-    file_structure = "\n".join([f"- `{file}`" for file in file_paths[:10]])  # Limit file list to top 10
+    file_structure = "\n".join([f"- `{file}`" for file in file_paths])
     scripts_list = "\n".join([f"- **{name}**: `{command}`" for name, command in scripts.items()])
 
-    # Generate description if missing
-    if not description:
-        description_prompt = f"""
-Generate a concise, project-specific description for "{project_name}" based on its file structure, router type ({router_type}), and dependencies.
+    description_prompt = f"""
+Create a tailored, high-quality description for the project "{project_name}" based on its file structure, router type ({router_type}), and dependencies. Ensure it is concise and clear, highlighting purpose, features, and user benefits.
 
 ### Dependencies
 {dependencies_list}
@@ -68,21 +66,10 @@ Generate a concise, project-specific description for "{project_name}" based on i
 ### File Structure
 {file_structure}
 """
-        description = generate_section(description_prompt)
-
-    about_project_prompt = f"""
-Create a tailored 'About the Project' section for "{project_name}" based on its file structure, router type ({router_type}), and dependencies. Include purpose, features, and benefits.
-
-### Dependencies
-{dependencies_list}
-
-### File Structure
-{file_structure}
-"""
-    about_project = generate_section(about_project_prompt)
+    about_project = generate_section(description_prompt)
 
     technologies_prompt = f"""
-Analyze the dependencies for "{project_name}" and identify the key libraries. Explain their importance and how they contribute to the application.
+Analyze the following dependencies for the project "{project_name}" and explain the key libraries used and their contributions to the project. Be specific and avoid redundancy.
 
 ### Dependencies
 {dependencies_list}
@@ -90,15 +77,23 @@ Analyze the dependencies for "{project_name}" and identify the key libraries. Ex
     technologies = generate_section(technologies_prompt)
 
     features_prompt = f"""
-Based on the project "{project_name}" and its file structure, list key features that highlight the project's purpose and capabilities.
+Generate a list of tailored, high-impact features for the project "{project_name}" based on the file structure and its intended purpose.
 
 ### File Structure
 {file_structure}
 """
     features = generate_section(features_prompt)
 
+    file_structure_prompt = f"""
+Provide a concise and organized overview of the file structure for the project "{project_name}". Focus only on key files and directories.
+
+### File Structure
+{file_structure}
+"""
+    file_structure_overview = generate_section(file_structure_prompt)
+
     getting_started_prompt = f"""
-Generate a tailored 'Getting Started' section for the project "{project_name}". Include setup steps, installation instructions, and running the project.
+Generate a concise 'Getting Started' section for the project "{project_name}" that includes installation steps, environment setup, and how to run the project.
 
 ### Dependencies
 {dependencies_list}
@@ -108,8 +103,16 @@ Generate a tailored 'Getting Started' section for the project "{project_name}". 
 """
     getting_started = generate_section(getting_started_prompt)
 
+    scripts_prompt = f"""
+Generate a concise 'Scripts and Commands' section for the project "{project_name}". Summarize the purpose of each command from the list.
+
+### Scripts
+{scripts_list}
+"""
+    scripts_section = generate_section(scripts_prompt)
+
     faq_prompt = f"""
-Generate a concise FAQ section for "{project_name}". Include key troubleshooting tips, common questions, and quick solutions.
+Generate a concise FAQ section for the project "{project_name}". Focus on common setup issues, feature usage, and configuration tips.
 
 ### Dependencies
 {dependencies_list}
@@ -119,8 +122,8 @@ Generate a concise FAQ section for "{project_name}". Include key troubleshooting
 """
     faq = generate_section(faq_prompt)
 
-    contributing_prompt = f"""
-Generate a concise 'Contributing' section for "{project_name}" with clear steps for submitting contributions and engaging with the community.
+    contribution_prompt = f"""
+Generate a concise 'Contributing' section for the project "{project_name}" with clear and actionable steps for collaboration.
 
 ### Dependencies
 {dependencies_list}
@@ -128,13 +131,16 @@ Generate a concise 'Contributing' section for "{project_name}" with clear steps 
 ### File Structure
 {file_structure}
 """
-    contributing = generate_section(contributing_prompt)
+    contributing = generate_section(contribution_prompt)
 
     acknowledgements_prompt = f"""
-Generate a short acknowledgements section for "{project_name}" that highlights key tools, libraries, and contributors.
+Generate a concise acknowledgements section for the project "{project_name}" that highlights key libraries, tools, and contributors.
 
 ### Dependencies
 {dependencies_list}
+
+### File Structure
+{file_structure}
 """
     acknowledgements = generate_section(acknowledgements_prompt)
 
@@ -179,10 +185,7 @@ Generate a short acknowledgements section for "{project_name}" that highlights k
 
 # File Structure
 
-**Highlighted Files**:
-{file_structure}
-
-For a full list, refer to the repository.
+{file_structure_overview}
 
 ---
 
@@ -194,10 +197,7 @@ For a full list, refer to the repository.
 
 # Scripts and Commands
 
-**Scripts Overview**:
-{scripts_list}
-
-For additional commands, see `package.json`.
+{scripts_section}
 
 ---
 
