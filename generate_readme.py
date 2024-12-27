@@ -147,7 +147,6 @@ Generate a concise acknowledgements section for the project "{project_name}" tha
     readme_content = f"""
 <div align="center">
   <h1>{project_name}</h1>
-  <p>{description}</p>
 </div>
 
 ---
