@@ -21,7 +21,9 @@ def parse_package_json():
     with open("package.json", "r") as f:
         package_data = json.load(f)
     project_name = package_data.get("name", "Unnamed Project").capitalize()
-    description = package_data.get("description", "A financial management platform.")
+    description = package_data.get("description", None)
+    if not description or "application" in description.lower() or "modern" in description.lower():
+        description = f"{project_name} is a dynamic project offering tailored functionality for its users."
     dependencies = package_data.get("dependencies", {})
     scripts = package_data.get("scripts", {})
     return project_name, description, dependencies, scripts
@@ -39,6 +41,11 @@ def detect_router_type(file_paths):
     elif any("/pages/" in path for path in file_paths):
         return "pages-router"
     return "react"
+
+def validate_content(content, default_message):
+    if not content.strip() or "cutting-edge" in content.lower() or "modern" in content.lower():
+        return default_message
+    return content
 
 def generate_section(prompt):
     def make_request():
@@ -58,7 +65,7 @@ def generate_readme(project_name, description, dependencies, scripts, file_paths
     scripts_list = "\n".join([f"- **{name}**: `{command}`" for name, command in scripts.items()])
 
     description_prompt = f"""
-Create a tailored, high-quality description for the project "{project_name}" based on its file structure, router type ({router_type}), and dependencies. Ensure it is concise and clear, highlighting purpose, features, and user benefits.
+Create a tailored, high-quality description for the project "{project_name}" based on its file structure, router type ({router_type}), and dependencies. Highlight purpose, features, and user benefits without generic phrases.
 
 ### Dependencies
 {dependencies_list}
@@ -66,7 +73,10 @@ Create a tailored, high-quality description for the project "{project_name}" bas
 ### File Structure
 {file_structure}
 """
-    about_project = generate_section(description_prompt)
+    about_project = validate_content(
+        generate_section(description_prompt),
+        f"{project_name} is a comprehensive project designed to simplify workflows and enhance user productivity."
+    )
 
     technologies_prompt = f"""
 Analyze the following dependencies for the project "{project_name}" and explain the key libraries used and their contributions to the project. Be specific and avoid redundancy.
@@ -74,7 +84,10 @@ Analyze the following dependencies for the project "{project_name}" and explain 
 ### Dependencies
 {dependencies_list}
 """
-    technologies = generate_section(technologies_prompt)
+    technologies = validate_content(
+        generate_section(technologies_prompt),
+        f"The project employs a modern tech stack, ensuring efficiency, scalability, and optimal user experience."
+    )
 
     features_prompt = f"""
 Generate a list of tailored, high-impact features for the project "{project_name}" based on the file structure and its intended purpose.
@@ -82,15 +95,21 @@ Generate a list of tailored, high-impact features for the project "{project_name
 ### File Structure
 {file_structure}
 """
-    features = generate_section(features_prompt)
+    features = validate_content(
+        generate_section(features_prompt),
+        f"{project_name} offers intuitive features to enhance user workflows."
+    )
 
     file_structure_prompt = f"""
-Provide a concise and organized overview of the file structure for the project "{project_name}". Focus only on key files and directories.
+Provide a concise and organized overview of the file structure for the project "{project_name}". Focus on key files and their purposes.
 
 ### File Structure
 {file_structure}
 """
-    file_structure_overview = generate_section(file_structure_prompt)
+    file_structure_overview = validate_content(
+        generate_section(file_structure_prompt),
+        f"The file structure of {project_name} is organized for maintainability and scalability."
+    )
 
     getting_started_prompt = f"""
 Generate a concise 'Getting Started' section for the project "{project_name}" that includes installation steps, environment setup, and how to run the project.
@@ -101,7 +120,10 @@ Generate a concise 'Getting Started' section for the project "{project_name}" th
 ### File Structure
 {file_structure}
 """
-    getting_started = generate_section(getting_started_prompt)
+    getting_started = validate_content(
+        generate_section(getting_started_prompt),
+        f"To get started with {project_name}, clone the repository, install dependencies, and run the development server."
+    )
 
     scripts_prompt = f"""
 Generate a concise 'Scripts and Commands' section for the project "{project_name}". Summarize the purpose of each command from the list.
@@ -109,7 +131,10 @@ Generate a concise 'Scripts and Commands' section for the project "{project_name
 ### Scripts
 {scripts_list}
 """
-    scripts_section = generate_section(scripts_prompt)
+    scripts_section = validate_content(
+        generate_section(scripts_prompt),
+        "The project includes essential scripts for development, testing, and deployment."
+    )
 
     faq_prompt = f"""
 Generate a concise FAQ section for the project "{project_name}". Focus on common setup issues, feature usage, and configuration tips.
@@ -120,7 +145,10 @@ Generate a concise FAQ section for the project "{project_name}". Focus on common
 ### File Structure
 {file_structure}
 """
-    faq = generate_section(faq_prompt)
+    faq = validate_content(
+        generate_section(faq_prompt),
+        "For common questions, refer to the documentation or contact the support team."
+    )
 
     contribution_prompt = f"""
 Generate a concise 'Contributing' section for the project "{project_name}" with clear and actionable steps for collaboration.
@@ -131,7 +159,10 @@ Generate a concise 'Contributing' section for the project "{project_name}" with 
 ### File Structure
 {file_structure}
 """
-    contributing = generate_section(contribution_prompt)
+    contributing = validate_content(
+        generate_section(contribution_prompt),
+        "We welcome contributions! Fork the repository, make changes, and submit a pull request."
+    )
 
     acknowledgements_prompt = f"""
 Generate a concise acknowledgements section for the project "{project_name}" that highlights key libraries, tools, and contributors.
@@ -142,11 +173,15 @@ Generate a concise acknowledgements section for the project "{project_name}" tha
 ### File Structure
 {file_structure}
 """
-    acknowledgements = generate_section(acknowledgements_prompt)
+    acknowledgements = validate_content(
+        generate_section(acknowledgements_prompt),
+        "This project was made possible thanks to open-source libraries and the contributions of our team."
+    )
 
     readme_content = f"""
 <div align="center">
   <h1>{project_name}</h1>
+  <p>{description}</p>
 </div>
 
 ---
