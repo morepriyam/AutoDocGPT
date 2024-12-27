@@ -23,5 +23,4 @@ RUN /venv/bin/pip install -r requirements.txt
 COPY entrypoint.sh /entrypoint.sh
 COPY generate_readme.py /generate_readme.py
 
-
 ENTRYPOINT ["/entrypoint.sh"]
