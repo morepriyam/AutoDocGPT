@@ -1,0 +1,23 @@
+name: AutoDocGPT
+
+description: AutoDocGPT is a GitHub Action that automatically generates a professional README.md file for your Next.js and React projects. It leverages OpenAI's GPT technology to analyze your project structure and create concise, tailored documentation with minimal effort.
+
+author: Priyam More
+
+branding:
+  icon: "book-open"
+  color: "red"
+
+inputs:
+  email:
+    description: The committer's email address.
+    required: true
+    default: ${{ github.actor }}@users.noreply.github.com
+  name:
+    description: The committer's name.
+    required: true
+    default: ${{ github.actor }}
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
